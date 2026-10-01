@@ -115,6 +115,8 @@ function PineForest({ positions }: { positions: THREE.Vector3[] }): JSX.Element 
     })
     meshRef1.current.instanceMatrix.needsUpdate = true
     meshRef2.current.instanceMatrix.needsUpdate = true
+    meshRef1.current.computeBoundingSphere()
+    meshRef2.current.computeBoundingSphere()
   }, [positions, geo1])
 
   if (!geo1 || !mat1) return <group />
@@ -124,12 +126,14 @@ function PineForest({ positions }: { positions: THREE.Vector3[] }): JSX.Element 
       <instancedMesh
         ref={meshRef1}
         args={[geo1, mat1, positions.length]}
+        frustumCulled={false}
         castShadow
         receiveShadow
       />
       <instancedMesh
         ref={meshRef2}
         args={[geo2, mat2, positions.length]}
+        frustumCulled={false}
         castShadow
         receiveShadow
       />
@@ -162,6 +166,7 @@ function PlaceholderRocks({ positions }: { positions: THREE.Vector3[] }): JSX.El
       mesh.setMatrixAt(i, DUMMY_OBJ.matrix)
     })
     mesh.instanceMatrix.needsUpdate = true
+    mesh.frustumCulled = false
     mesh.castShadow = true
     mesh.receiveShadow = true
     return mesh
@@ -190,6 +195,7 @@ function PlaceholderBushes({ positions }: { positions: THREE.Vector3[] }): JSX.E
       mesh.setMatrixAt(i, DUMMY_OBJ.matrix)
     })
     mesh.instanceMatrix.needsUpdate = true
+    mesh.frustumCulled = false
     mesh.castShadow = true
     mesh.receiveShadow = true
     return mesh
