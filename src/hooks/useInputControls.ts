@@ -1,0 +1,113 @@
+import { useEffect, useRef } from 'react'
+import { useInputStore } from '@/stores/useInputStore'
+
+const CODE_MAP: Record<string, keyof ReturnType<typeof useInputStore.getState>> = {
+  KeyW: 'forward',
+  ArrowUp: 'forward',
+  KeyS: 'backward',
+  ArrowDown: 'backward',
+  KeyA: 'left',
+  ArrowLeft: 'left',
+  KeyD: 'right',
+  ArrowRight: 'right',
+  ShiftLeft: 'run',
+  ShiftRight: 'run',
+  Space: 'jump',
+  KeyE: 'interact',
+  KeyF: 'collect',
+  KeyQ: 'ultimate',
+}
+
+const KEY_FALLBACKS: Record<string, keyof ReturnType<typeof useInputStore.getState>> = {
+  w: 'forward',
+  s: 'backward',
+  a: 'left',
+  d: 'right',
+  ' ': 'jump',
+  spacebar: 'jump',
+  e: 'interact',
+  f: 'collect',
+  q: 'ultimate',
+  shift: 'run',
+}
+
+function resolveKey(e: KeyboardEvent): keyof ReturnType<typeof useInputStore.getState> | undefined {
+  if (CODE_MAP[e.code]) return CODE_MAP[e.code]
+  return KEY_FALLBACKS[e.key.toLowerCase()]
+}
+
+/**
+ * Registers keyboard and mouse drag listeners to sync with useInputStore.
+ * Left-click or right-click drag orbits camera, scroll zooms.
+ */
+export function useInputControls(): void {
+  const { setKey, setMouseDelta, setScroll } = useInputStore()
+  const isDraggingRef = useRef(false)
+  const lastMousePos = useRef({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent): void => {
+      // Don't intercept refresh / devtools
+      if (e.code === 'F5' || e.code === 'F12' || (e.ctrlKey && e.code === 'KeyR')) return
+      const mapped = resolveKey(e)
+      if (mapped) {
+        if (mapped === 'jump') e.preventDefault()
+        setKey(mapped as Parameters<typeof setKey>[0], true)
+      }
+    }
+
+    const onKeyUp = (e: KeyboardEvent): void => {
+      const mapped = resolveKey(e)
+      if (mapped) {
+        setKey(mapped as Parameters<typeof setKey>[0], false)
+      }
+    }
+
+    const onMouseDown = (e: MouseEvent): void => {
+      // Drag with left or right click
+      if (e.button === 0 || e.button === 2) {
+        isDraggingRef.current = true
+        lastMousePos.current = { x: e.clientX, y: e.clientY }
+      }
+    }
+
+    const onMouseMove = (e: MouseEvent): void => {
+      if (!isDraggingRef.current) return
+      const dx = e.clientX - lastMousePos.current.x
+      const dy = e.clientY - lastMousePos.current.y
+      lastMousePos.current = { x: e.clientX, y: e.clientY }
+      setMouseDelta(dx, dy)
+    }
+
+    const onMouseUp = (): void => {
+      isDraggingRef.current = false
+    }
+
+    const onWheel = (e: WheelEvent): void => {
+      setScroll(e.deltaY)
+    }
+
+    const onContextMenu = (e: MouseEvent): void => {
+      // Prevent context menu when right clicking to orbit
+      e.preventDefault()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('mousedown', onMouseDown)
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    window.addEventListener('wheel', onWheel, { passive: true })
+    window.addEventListener('contextmenu', onContextMenu)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('contextmenu', onContextMenu)
+    }
+  }, [setKey, setMouseDelta, setScroll])
+}
