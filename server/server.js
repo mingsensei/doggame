@@ -16,6 +16,112 @@ const wss = new WebSocketServer({ server, path: '/ws' })
 const players = new Map()
 let nextPlayerId = 1
 
+// ── Bot "mingsensei" setup ─────────────────────────────────
+const bot = {
+  id: 'bot-mingsensei',
+  name: 'mingsensei',
+  position: [2.5, 0, 2.5],
+  rotation: 0,
+  state: 'IDLE',
+  speed: 0,
+}
+
+let botTarget = [3, 0, 3]
+let botIdleUntil = Date.now() + 2000
+let botNextBarkTime = Date.now() + 10000 + Math.random() * 10000 // 10s - 20s
+let botBarkingUntil = 0
+
+const pickTarget = () => {
+  // Wanders randomly around spawn [0, 0, 0] within radius 3m - 12m
+  const angle = Math.random() * Math.PI * 2
+  const r = 3 + Math.random() * 9
+  return [Math.sin(angle) * r, 0, Math.cos(angle) * r]
+}
+
+botTarget = pickTarget()
+
+// 20Hz Bot Wander & Bark Loop
+setInterval(() => {
+  if (players.size === 0) return
+
+  const now = Date.now()
+  const dt = 0.05
+
+  if (now < botBarkingUntil) {
+    bot.state = 'BARKING'
+    bot.speed = 0
+  } else if (bot.state === 'BARKING') {
+    bot.state = 'IDLE'
+    bot.speed = 0
+    botIdleUntil = now + 1500 + Math.random() * 2000
+    broadcast({
+      type: 'player_updated',
+      id: bot.id,
+      position: bot.position,
+      rotation: bot.rotation,
+      state: 'IDLE',
+      speed: 0,
+    })
+  } else if (now >= botNextBarkTime) {
+    // Time to bark: random every 10 - 20s
+    botNextBarkTime = now + 10000 + Math.random() * 10000
+    bot.state = 'BARKING'
+    bot.speed = 0
+    botBarkingUntil = now + 1300
+
+    broadcast({
+      type: 'player_action',
+      id: bot.id,
+      action: 'bark',
+    })
+    broadcast({
+      type: 'player_updated',
+      id: bot.id,
+      position: bot.position,
+      rotation: bot.rotation,
+      state: 'BARKING',
+      speed: 0,
+    })
+  } else if (now < botIdleUntil) {
+    bot.state = 'IDLE'
+    bot.speed = 0
+  } else {
+    // Wander towards random target
+    const dx = botTarget[0] - bot.position[0]
+    const dz = botTarget[2] - bot.position[2]
+    const dist = Math.hypot(dx, dz)
+
+    if (dist < 0.6) {
+      bot.state = 'IDLE'
+      bot.speed = 0
+      botIdleUntil = now + 2500 + Math.random() * 3000
+      botTarget = pickTarget()
+    } else {
+      const targetRot = Math.atan2(dx, dz)
+      let diff = targetRot - bot.rotation
+      while (diff < -Math.PI) diff += Math.PI * 2
+      while (diff > Math.PI) diff -= Math.PI * 2
+      bot.rotation += diff * Math.min(1, 6 * dt)
+
+      const walkSpeed = 1.8
+      bot.position[0] += Math.sin(bot.rotation) * walkSpeed * dt
+      bot.position[2] += Math.cos(bot.rotation) * walkSpeed * dt
+      bot.state = 'WALKING'
+      bot.speed = walkSpeed
+    }
+  }
+
+  // Broadcast bot update
+  broadcast({
+    type: 'player_updated',
+    id: bot.id,
+    position: bot.position,
+    rotation: bot.rotation,
+    state: bot.state,
+    speed: bot.speed,
+  })
+}, 50)
+
 wss.on('connection', (ws) => {
   const playerId = `dog-${nextPlayerId++}-${Math.random().toString(36).slice(2, 6)}`
 
@@ -37,6 +143,9 @@ wss.on('connection', (ws) => {
 
         // Send welcome packet with current players list
         const currentPlayers = {}
+        // Always include mingsensei bot
+        currentPlayers[bot.id] = bot
+
         for (const [id, p] of players.entries()) {
           if (id !== playerId) {
             currentPlayers[id] = p.data

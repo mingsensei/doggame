@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, Html } from '@react-three/drei'
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js'
@@ -87,9 +87,25 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
     groupRef.current.rotation.y += diff * (1 - Math.exp(-14 * delta))
   })
 
-  // Action status indicators
-  const isBarking = player.state === 'BARKING' || player.lastAction === 'bark'
-  const isUltimate = player.lastAction === 'ultimate' && Date.now() - (player.lastActionTimestamp || 0) < 7000
+  // Bark bubble state with auto-dismissing timer
+  const [showBarkBubble, setShowBarkBubble] = useState(false)
+
+  useEffect(() => {
+    if (player.state === 'BARKING' || player.lastAction === 'bark') {
+      setShowBarkBubble(true)
+      const timer = setTimeout(() => {
+        setShowBarkBubble(false)
+      }, 1300)
+      return () => clearTimeout(timer)
+    } else {
+      setShowBarkBubble(false)
+    }
+  }, [player.state, player.lastAction, player.lastActionTimestamp])
+
+  const isUltimate =
+    player.lastAction === 'ultimate' && Date.now() - (player.lastActionTimestamp || 0) < 7000
+
+  const isBot = player.name === 'mingsensei'
 
   return (
     <group ref={groupRef} position={player.position} rotation={[0, player.rotation, 0]}>
@@ -110,8 +126,8 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
       {/* Floating 3D Name Tag & Emotes */}
       <Html position={[0, 1.15, 0]} center distanceFactor={14}>
         <div className="flex flex-col items-center pointer-events-none select-none">
-          {/* Bark speech bubble */}
-          {isBarking && (
+          {/* Bark speech bubble (automatically hides when barking finishes) */}
+          {showBarkBubble && (
             <div className="mb-1.5 px-3 py-1 bg-white text-black font-extrabold text-xs rounded-xl shadow-lg border border-black/10 animate-bounce">
               🔊 Gâu! Gâu!
             </div>
@@ -125,9 +141,16 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
           )}
 
           {/* Player Name Badge */}
-          <div className="flex items-center gap-1 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white font-semibold text-xs rounded-full border border-white/20 shadow-md">
-            <span className="text-[10px]">🐾</span>
-            <span className="text-amber-300 font-bold">{player.name}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white font-semibold text-xs rounded-full border border-white/20 shadow-md">
+            <span className="text-[10px]">{isBot ? '🤖' : '🐾'}</span>
+            <span className={isBot ? 'text-yellow-300 font-extrabold' : 'text-amber-300 font-bold'}>
+              {player.name}
+            </span>
+            {isBot && (
+              <span className="px-1 py-0.2 rounded bg-yellow-400 text-black text-[9px] font-black uppercase tracking-wider">
+                BOT
+              </span>
+            )}
           </div>
         </div>
       </Html>
