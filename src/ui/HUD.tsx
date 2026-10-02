@@ -1,6 +1,8 @@
 import { useDogStore } from '@/stores/useDogStore'
 import { useInteractionStore } from '@/stores/useInteractionStore'
 import { useUltimateStore } from '@/stores/useUltimateStore'
+import { useMultiplayerStore } from '@/stores/useMultiplayerStore'
+import { useSettingsStore } from '@/stores/useSettingsStore'
 
 interface HUDProps {
   onOpenSettings?: () => void
@@ -10,6 +12,12 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
   const state = useDogStore((s) => s.state)
   const bonesCollected = useDogStore((s) => s.bonesCollected)
   const activeTarget = useInteractionStore((s) => s.activeTarget)
+
+  // Player & Multiplayer Info
+  const playerName = useSettingsStore((s) => s.playerName)
+  const multiplayerStatus = useMultiplayerStore((s) => s.status)
+  const remotePlayers = useMultiplayerStore((s) => s.players)
+  const onlineCount = Object.keys(remotePlayers).length + 1
 
   // Ultimate Skill Store
   const ultimatePhase = useUltimateStore((s) => s.phase)
@@ -57,17 +65,38 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
     <div className="fixed inset-0 pointer-events-none z-10 select-none flex flex-col justify-between p-6">
       {/* ── Top Bar ────────────────────────────────────────────── */}
       <div className="flex justify-between items-start">
-        {/* Game Title & Status Badge */}
+        {/* Game Title, Player Nickname & Status Badge */}
         <div className="flex items-center gap-3">
-          <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-lg flex items-center gap-2">
-            <span className="text-xl">🐾</span>
-            <span className="font-bold text-white tracking-wide text-sm">Dog World</span>
+          <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-lg flex items-center gap-2.5">
+            <span className="text-xl">🐕</span>
+            <div>
+              <div className="font-extrabold text-white tracking-wide text-xs">
+                {playerName || 'Cún Cưng'}
+              </div>
+              <div className="text-[10px] text-amber-300/80 font-mono">Dog World 🐾</div>
+            </div>
           </div>
 
           <div
             className={`px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase shadow-md transition-all duration-300 ${badge.bg}`}
           >
             {badge.label}
+          </div>
+
+          {/* Multiplayer Online Pill */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs text-white/80">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                multiplayerStatus === 'CONNECTED'
+                  ? 'bg-emerald-400 animate-pulse'
+                  : 'bg-amber-400'
+              }`}
+            />
+            <span className="font-medium">
+              {multiplayerStatus === 'CONNECTED'
+                ? `${onlineCount} Người chơi online`
+                : 'Chế độ Chơi đơn'}
+            </span>
           </div>
         </div>
 

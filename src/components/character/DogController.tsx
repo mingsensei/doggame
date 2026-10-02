@@ -6,6 +6,7 @@ import { useDogStore } from '@/stores/useDogStore'
 import { useInputStore } from '@/stores/useInputStore'
 import { useInteractionStore } from '@/stores/useInteractionStore'
 import { useUltimateStore } from '@/stores/useUltimateStore'
+import { useMultiplayerStore } from '@/stores/useMultiplayerStore'
 import { cameraDirection } from '@/stores/cameraDirection'
 import {
   WALK_SPEED,
@@ -70,6 +71,7 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
       useInputStore.getState().setKey('ultimate', false)
       const triggered = useUltimateStore.getState().triggerUltimate([pos.x, pos.y, pos.z])
       if (triggered) {
+        useMultiplayerStore.getState().sendAction('ultimate')
         setState('BARKING') // Activation roar/bark stance
         if (actionTimeoutRef.current) clearTimeout(actionTimeoutRef.current)
         actionTimeoutRef.current = window.setTimeout(() => {
@@ -83,6 +85,7 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
     // Handle Jump Trigger (Space key)
     if (jump && isGrounded && !isLocked()) {
       useInputStore.getState().setKey('jump', false)
+      useMultiplayerStore.getState().sendAction('jump')
       const JUMP_IMPULSE = 8.5
       rb.setLinvel({ x: curLinvel.x, y: JUMP_IMPULSE, z: curLinvel.z }, true)
       setState('JUMPING')
@@ -114,6 +117,7 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
           useDogStore.getState().setState('IDLE')
         }, PEE_DURATION)
       } else {
+        useMultiplayerStore.getState().sendAction('bark')
         setState('BARKING')
         if (actionTimeoutRef.current) clearTimeout(actionTimeoutRef.current)
         actionTimeoutRef.current = window.setTimeout(() => {
