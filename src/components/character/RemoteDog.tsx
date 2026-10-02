@@ -118,7 +118,6 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
   const isAttacking =
     player.lastAction === 'attack' && Date.now() - (player.lastActionTimestamp || 0) < 600
 
-  const isBot = player.name === 'mingsensei'
   const isForm2 = player.form === 2
 
   return (
@@ -157,15 +156,10 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
 
           {/* Player Name Badge */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white font-semibold text-xs rounded-full border border-white/20 shadow-md">
-            <span className="text-[10px]">{isBot ? '🤖' : isForm2 ? '🐺' : '🐾'}</span>
-            <span className={isBot ? 'text-yellow-300 font-extrabold' : 'text-amber-300 font-bold'}>
+            <span className="text-[10px]">{isForm2 ? '🐺' : '🐾'}</span>
+            <span className="text-amber-300 font-bold">
               {player.name}
             </span>
-            {isBot && (
-              <span className="px-1 py-0.2 rounded bg-yellow-400 text-black text-[9px] font-black uppercase tracking-wider">
-                BOT
-              </span>
-            )}
           </div>
         </div>
       </Html>
