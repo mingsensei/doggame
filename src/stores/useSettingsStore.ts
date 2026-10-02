@@ -16,6 +16,9 @@ interface SettingsStore {
 
   setPlayerName: (name: string) => void
   setGraphicsQuality: (q: GraphicsQuality) => void
+  setDpr: (dpr: number) => void
+  setShadowsEnabled: (enabled: boolean) => void
+  setPostProcessingEnabled: (enabled: boolean) => void
   setMasterVolume: (v: number) => void
   setSfxVolume: (v: number) => void
   setMusicVolume: (v: number) => void
@@ -64,17 +67,21 @@ export const useSettingsStore = create<SettingsStore>()(
             graphicsQuality: 'balanced',
             dpr: 1.0,
             shadowsEnabled: true,
-            postProcessingEnabled: true,
+            postProcessingEnabled: false, // Turned off by default in balanced for smooth 60fps on Windows
           })
         } else {
           set({
             graphicsQuality: 'cinematic',
-            dpr: 1.25,
+            dpr: 1.15,
             shadowsEnabled: true,
             postProcessingEnabled: true,
           })
         }
       },
+
+      setDpr: (dpr: number) => set({ dpr }),
+      setShadowsEnabled: (shadowsEnabled: boolean) => set({ shadowsEnabled }),
+      setPostProcessingEnabled: (postProcessingEnabled: boolean) => set({ postProcessingEnabled }),
 
       setMasterVolume: (v: number) => set({ masterVolume: v }),
       setSfxVolume: (v: number) => set({ sfxVolume: v }),

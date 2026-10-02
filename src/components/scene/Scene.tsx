@@ -23,7 +23,7 @@ export function Scene(): JSX.Element {
 
   return (
     <>
-      <Physics gravity={[0, -20, 0]}>
+      <Physics gravity={[0, -20, 0]} timeStep="vary">
         <Suspense fallback={null}>
           <SceneEnvironment />
           <Ground />

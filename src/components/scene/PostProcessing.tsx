@@ -10,10 +10,10 @@ export function PostProcessing(): JSX.Element {
   return (
     <EffectComposer multisampling={0} enableNormalPass={false} autoClear={false}>
       <Bloom
-        intensity={0.3}
-        luminanceThreshold={0.88}
-        luminanceSmoothing={0.15}
-        mipmapBlur
+        intensity={0.2}
+        luminanceThreshold={0.92}
+        luminanceSmoothing={0.08}
+        mipmapBlur={false}
       />
       <Vignette
         offset={0.35}
