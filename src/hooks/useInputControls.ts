@@ -61,7 +61,17 @@ export function useInputControls(): void {
       // Press Enter to open chat when not typing
       if ((e.code === 'Enter' || e.key === 'Enter') && !isTyping) {
         e.preventDefault()
+        if (document.pointerLockElement) {
+          document.exitPointerLock()
+        }
         useMultiplayerStore.getState().setChatOpen(true)
+        return
+      }
+
+      // Press Tab or L to toggle Pointer Lock (free look camera)
+      if ((e.code === 'Tab' || e.code === 'KeyL') && !isTyping) {
+        e.preventDefault()
+        useInputStore.getState().togglePointerLock()
         return
       }
 
@@ -91,6 +101,14 @@ export function useInputControls(): void {
     }
 
     const onMouseDown = (e: MouseEvent): void => {
+      // In pointer lock mode: left-click immediately attacks in Form 2
+      if (document.pointerLockElement) {
+        if (e.button === 0) {
+          setKey('attack', true)
+        }
+        return
+      }
+
       // Ignore clicks on HUD buttons, inputs, or chat container
       const target = e.target as HTMLElement | null
       if (
@@ -116,6 +134,12 @@ export function useInputControls(): void {
     }
 
     const onMouseMove = (e: MouseEvent): void => {
+      // In pointer lock mode: screen rotates automatically as mouse moves, no drag needed!
+      if (document.pointerLockElement) {
+        setMouseDelta(e.movementX, e.movementY)
+        return
+      }
+
       if (!isDraggingRef.current) return
       const dx = e.clientX - lastMousePos.current.x
       const dy = e.clientY - lastMousePos.current.y
@@ -139,6 +163,10 @@ export function useInputControls(): void {
       e.preventDefault()
     }
 
+    const onPointerLockChange = (): void => {
+      useInputStore.getState().setPointerLocked(!!document.pointerLockElement)
+    }
+
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
     window.addEventListener('mousedown', onMouseDown)
@@ -146,6 +174,7 @@ export function useInputControls(): void {
     window.addEventListener('mouseup', onMouseUp)
     window.addEventListener('wheel', onWheel, { passive: true })
     window.addEventListener('contextmenu', onContextMenu)
+    document.addEventListener('pointerlockchange', onPointerLockChange)
 
     return () => {
       window.removeEventListener('keydown', onKeyDown)
@@ -155,6 +184,7 @@ export function useInputControls(): void {
       window.removeEventListener('mouseup', onMouseUp)
       window.removeEventListener('wheel', onWheel)
       window.removeEventListener('contextmenu', onContextMenu)
+      document.removeEventListener('pointerlockchange', onPointerLockChange)
     }
   }, [setKey, setMouseDelta, setScroll])
 }

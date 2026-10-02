@@ -15,9 +15,12 @@ interface InputStore {
   mouseDeltaX: number
   mouseDeltaY: number
   mouseScrollDelta: number
-  setKey: (key: keyof Omit<InputStore, 'setKey' | 'setMouseDelta' | 'setScroll' | 'clearFrame'>, value: boolean) => void
+  isPointerLocked: boolean
+  setKey: (key: keyof Omit<InputStore, 'setKey' | 'setMouseDelta' | 'setScroll' | 'clearFrame' | 'isPointerLocked' | 'setPointerLocked' | 'togglePointerLock'>, value: boolean) => void
   setMouseDelta: (dx: number, dy: number) => void
   setScroll: (delta: number) => void
+  setPointerLocked: (locked: boolean) => void
+  togglePointerLock: () => void
   /** Called at end of frame to reset per-frame values */
   clearFrame: () => void
 }
@@ -36,9 +39,19 @@ export const useInputStore = create<InputStore>((set) => ({
   mouseDeltaX: 0,
   mouseDeltaY: 0,
   mouseScrollDelta: 0,
+  isPointerLocked: false,
 
   setKey: (key, value) => set({ [key]: value }),
   setMouseDelta: (dx, dy) => set({ mouseDeltaX: dx, mouseDeltaY: dy }),
   setScroll: (delta) => set({ mouseScrollDelta: delta }),
+  setPointerLocked: (locked) => set({ isPointerLocked: locked }),
+  togglePointerLock: () => {
+    if (typeof document === 'undefined') return
+    if (document.pointerLockElement) {
+      document.exitPointerLock()
+    } else {
+      document.body.requestPointerLock?.()
+    }
+  },
   clearFrame: () => set({ mouseDeltaX: 0, mouseDeltaY: 0, mouseScrollDelta: 0 }),
 }))

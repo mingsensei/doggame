@@ -2,6 +2,7 @@ import { useDogStore } from '@/stores/useDogStore'
 import { useInteractionStore } from '@/stores/useInteractionStore'
 import { useMultiplayerStore } from '@/stores/useMultiplayerStore'
 import { useSettingsStore } from '@/stores/useSettingsStore'
+import { useInputStore } from '@/stores/useInputStore'
 import { soundManager } from '@/game/audio/SoundManager'
 
 interface HUDProps {
@@ -21,6 +22,10 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
   const multiplayerStatus = useMultiplayerStore((s) => s.status)
   const remotePlayers = useMultiplayerStore((s) => s.players)
   const onlineCount = Object.keys(remotePlayers).length + 1
+
+  // Mouse Lock state
+  const isPointerLocked = useInputStore((s) => s.isPointerLocked)
+  const togglePointerLock = useInputStore((s) => s.togglePointerLock)
 
   // Handle clicking the form transformation button
   const handleFormClick = () => {
@@ -98,8 +103,24 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
           </div>
         </div>
 
-        {/* Bone Collection Counter & Settings Button */}
-        <div className="flex items-center gap-3">
+        {/* Pointer Lock Button, Bone Collection Counter & Settings Button */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={togglePointerLock}
+            className={`pointer-events-auto flex items-center gap-2 px-3.5 py-2 rounded-2xl border backdrop-blur-md shadow-lg transition-all active:scale-95 cursor-pointer text-xs font-bold ${
+              isPointerLocked
+                ? 'bg-emerald-500/85 hover:bg-emerald-500 border-emerald-300 text-white shadow-[0_0_20px_rgba(16,185,129,0.6)]'
+                : 'bg-black/50 hover:bg-black/70 border-white/15 text-white/90 hover:text-white'
+            }`}
+            title="Bấm để ẩn con trỏ chuột và xoay màn hình tự do (hoặc bấm phím TAB / L)"
+          >
+            <span className="text-base">{isPointerLocked ? '🎯' : '🖱️'}</span>
+            <span>{isPointerLocked ? 'Đang Khóa Chuột' : 'Khóa Chuột (Xoay tự do)'}</span>
+            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[9px] text-white font-extrabold">
+              {isPointerLocked ? 'ESC mở' : 'TAB'}
+            </span>
+          </button>
+
           <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-amber-500/30 shadow-lg flex items-center gap-2">
             <span className="text-xl animate-pulse">🦴</span>
             <span className="font-bold text-amber-300 text-sm">
@@ -110,7 +131,7 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
           {onOpenSettings && (
             <button
               onClick={onOpenSettings}
-              className="pointer-events-auto bg-black/40 hover:bg-black/60 active:scale-95 transition-all backdrop-blur-md p-2.5 rounded-2xl border border-white/10 text-white/80 hover:text-white shadow-lg"
+              className="pointer-events-auto bg-black/40 hover:bg-black/60 active:scale-95 transition-all backdrop-blur-md p-2.5 rounded-2xl border border-white/10 text-white/80 hover:text-white shadow-lg cursor-pointer"
               title="Settings"
             >
               ⚙️
@@ -118,6 +139,19 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
           )}
         </div>
       </div>
+
+      {/* ── Active Pointer Lock Free Look Banner ────────────────── */}
+      {isPointerLocked && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-300">
+          <div className="px-4 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center gap-2 shadow-xl">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>Chế độ xoay chuột tự do đang bật</span>
+            <span className="text-[10px] text-white/70 font-mono bg-white/10 px-2 py-0.5 rounded-md">
+              Nhấn [ESC] hoặc [TAB] để hiện lại chuột
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* ── Center Crosshair ───────────────────────────────────── */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -171,7 +205,7 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
             </div>
             <div className="flex items-center gap-2">
               <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">CHUỘT</span>
-              <span>Xoay góc nhìn</span>
+              <span>Xoay góc nhìn ({isPointerLocked ? 'Đang xoay tự do' : 'Bấm TAB khóa chuột'})</span>
             </div>
           </div>
         )}
@@ -212,8 +246,8 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
               <span className="text-yellow-200 font-bold">Trở Về Dạng Cún 🐕</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">CHUỘT PHẢI</span>
-              <span>Xoay góc nhìn</span>
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">CHUỘT</span>
+              <span>Xoay góc nhìn ({isPointerLocked ? 'Đang xoay tự do' : 'Bấm TAB khóa chuột'})</span>
             </div>
           </div>
         )}
