@@ -10,6 +10,16 @@ function multiplayerWebSocketPlugin(): Plugin {
       const wss = new WebSocketServer({ noServer: true })
       const players = new Map<string, { ws: WebSocket; data: Record<string, unknown> }>()
       let nextPlayerId = 1
+      const recentMessages: Array<Record<string, unknown>> = [
+        {
+          id: 'sys-welcome',
+          senderId: 'system',
+          senderName: 'Hệ Thống 🐾',
+          text: 'Chào mừng các bạn đến với Dog World! Nhấn [Enter] để trò chuyện.',
+          timestamp: Date.now(),
+          isSystem: true,
+        },
+      ]
 
       // ── Bot "mingsensei" setup ─────────────────────────────────
       const bot = {
@@ -166,7 +176,23 @@ function multiplayerWebSocketPlugin(): Plugin {
                 if (id !== playerId) currentPlayers[id] = p.data
               }
 
-              ws.send(JSON.stringify({ type: 'welcome', id: playerId, players: currentPlayers }))
+              const joinNotice = {
+                id: `sys-${playerId}-${Date.now()}`,
+                senderId: 'system',
+                senderName: 'Hệ Thống 🐾',
+                text: `${playerData.name || 'Người chơi'} đã vào phòng 🐾`,
+                timestamp: Date.now(),
+                isSystem: true,
+              }
+              recentMessages.push(joinNotice)
+              if (recentMessages.length > 30) recentMessages.shift()
+
+              ws.send(JSON.stringify({
+                type: 'welcome',
+                id: playerId,
+                players: currentPlayers,
+                chatHistory: recentMessages,
+              }))
 
               const joinPayload = JSON.stringify({ type: 'player_joined', player: playerData })
               for (const [id, p] of players.entries()) {
@@ -208,12 +234,19 @@ function multiplayerWebSocketPlugin(): Plugin {
               if (player && typeof msg.text === 'string') {
                 const text = msg.text.trim().slice(0, 200)
                 if (text) {
-                  const chatPayload = JSON.stringify({
-                    type: 'chat',
-                    id: playerId,
-                    name: (player.data.name as string) || 'Người chơi',
+                  const chatMsg = {
+                    id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                    senderId: playerId,
+                    senderName: (player.data.name as string) || 'Người chơi',
                     text: text,
                     timestamp: Date.now(),
+                  }
+                  recentMessages.push(chatMsg)
+                  if (recentMessages.length > 30) recentMessages.shift()
+
+                  const chatPayload = JSON.stringify({
+                    type: 'chat',
+                    ...chatMsg,
                   })
                   for (const [, p] of players.entries()) {
                     if (p.ws.readyState === WebSocket.OPEN) p.ws.send(chatPayload)
@@ -227,11 +260,22 @@ function multiplayerWebSocketPlugin(): Plugin {
         })
 
         ws.on('close', () => {
+          const player = players.get(playerId)
+          const name = player ? (player.data.name as string) : playerId
           players.delete(playerId)
           const leftPayload = JSON.stringify({ type: 'player_left', id: playerId })
           for (const [, p] of players.entries()) {
             if (p.ws.readyState === WebSocket.OPEN) p.ws.send(leftPayload)
           }
+          recentMessages.push({
+            id: `sys-${playerId}-${Date.now()}`,
+            senderId: 'system',
+            senderName: 'Hệ Thống 🐾',
+            text: `${name || 'Người chơi'} đã rời phòng.`,
+            timestamp: Date.now(),
+            isSystem: true,
+          })
+          if (recentMessages.length > 30) recentMessages.shift()
         })
       })
     },

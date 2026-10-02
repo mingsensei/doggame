@@ -1,5 +1,12 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import http from 'http'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const CHAT_HISTORY_FILE = path.join(__dirname, 'chat_history.json')
 
 const PORT = process.env.PORT || 3001
 
@@ -9,6 +16,52 @@ const server = http.createServer((req, res) => {
 })
 
 const wss = new WebSocketServer({ server, path: '/ws' })
+
+/**
+ * Chat history persistence: stores up to 30 latest messages/notices
+ */
+const MAX_CHAT_HISTORY = 30
+let recentMessages = []
+
+try {
+  if (fs.existsSync(CHAT_HISTORY_FILE)) {
+    const raw = fs.readFileSync(CHAT_HISTORY_FILE, 'utf-8')
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) {
+      recentMessages = parsed.slice(-MAX_CHAT_HISTORY)
+      console.log(`📜 Loaded ${recentMessages.length} chat messages from disk.`)
+    }
+  }
+} catch (e) {
+  console.warn('Could not read chat history from disk:', e.message)
+}
+
+if (recentMessages.length === 0) {
+  recentMessages.push({
+    id: 'sys-welcome',
+    senderId: 'system',
+    senderName: 'Hệ Thống 🐾',
+    text: 'Chào mừng các bạn đến với Dog World! Nhấn [Enter] để trò chuyện.',
+    timestamp: Date.now(),
+    isSystem: true,
+  })
+}
+
+function saveChatHistory() {
+  try {
+    fs.writeFileSync(CHAT_HISTORY_FILE, JSON.stringify(recentMessages.slice(-MAX_CHAT_HISTORY), null, 2), 'utf-8')
+  } catch (e) {
+    // Non-fatal if disk is read-only
+  }
+}
+
+function addChatMessage(msg) {
+  recentMessages.push(msg)
+  if (recentMessages.length > MAX_CHAT_HISTORY) {
+    recentMessages = recentMessages.slice(-MAX_CHAT_HISTORY)
+  }
+  saveChatHistory()
+}
 
 /**
  * Connected players map: id -> { ws, data: { id, name, position, rotation, state, speed } }
@@ -82,6 +135,30 @@ setInterval(() => {
       state: 'BARKING',
       speed: 0,
     })
+
+    if (Math.random() < 0.4) {
+      const quotes = [
+        'Gâu gâu! 🐕',
+        'Chào bạn nha! 🐾',
+        'Đố ai bắt được tui! 🏃💨',
+        'Thế giới này đẹp ghê! 🌸',
+        'Có ai tìm đủ 8 khúc xương chưa? 🦴',
+        'Woof woof! 🐶',
+      ]
+      const quote = quotes[Math.floor(Math.random() * quotes.length)]
+      const botMsg = {
+        id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        senderId: bot.id,
+        senderName: bot.name,
+        text: quote,
+        timestamp: Date.now(),
+      }
+      addChatMessage(botMsg)
+      broadcast({
+        type: 'chat',
+        ...botMsg,
+      })
+    }
   } else if (now < botIdleUntil) {
     bot.state = 'IDLE'
     bot.speed = 0
@@ -141,7 +218,7 @@ wss.on('connection', (ws) => {
 
         players.set(playerId, { ws, data: playerData })
 
-        // Send welcome packet with current players list
+        // Send welcome packet with current players list AND recent 30 chat messages
         const currentPlayers = {}
         // Always include mingsensei bot
         currentPlayers[bot.id] = bot
@@ -157,8 +234,20 @@ wss.on('connection', (ws) => {
             type: 'welcome',
             id: playerId,
             players: currentPlayers,
+            chatHistory: recentMessages,
           })
         )
+
+        // Store join notice in persistent chat history and notify others
+        const joinMsg = {
+          id: `sys-${playerId}-${Date.now()}`,
+          senderId: 'system',
+          senderName: 'Hệ Thống 🐾',
+          text: `${playerData.name || 'Người chơi'} đã vào phòng 🐾`,
+          timestamp: Date.now(),
+          isSystem: true,
+        }
+        addChatMessage(joinMsg)
 
         // Broadcast new player joined to all other clients
         broadcast(
@@ -208,12 +297,17 @@ wss.on('connection', (ws) => {
         if (player && typeof msg.text === 'string') {
           const text = msg.text.trim().slice(0, 200)
           if (text) {
-            broadcast({
-              type: 'chat',
-              id: playerId,
-              name: player.data.name || 'Người chơi',
+            const chatMsg = {
+              id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              senderId: playerId,
+              senderName: player.data.name || 'Người chơi',
               text: text,
               timestamp: Date.now(),
+            }
+            addChatMessage(chatMsg)
+            broadcast({
+              type: 'chat',
+              ...chatMsg,
             })
             console.log(`💬 Chat [${player.data.name}]: ${text}`)
           }
@@ -232,6 +326,17 @@ wss.on('connection', (ws) => {
       type: 'player_left',
       id: playerId,
     })
+
+    const leaveMsg = {
+      id: `sys-${playerId}-${Date.now()}`,
+      senderId: 'system',
+      senderName: 'Hệ Thống 🐾',
+      text: `${name || 'Người chơi'} đã rời phòng.`,
+      timestamp: Date.now(),
+      isSystem: true,
+    }
+    addChatMessage(leaveMsg)
+
     console.log(`👋 Player left: ${name} (${playerId}). Total online: ${players.size}`)
   })
 })

@@ -267,9 +267,18 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
             const data = JSON.parse(event.data)
 
             if (data.type === 'welcome') {
+              const incomingHistory =
+                Array.isArray(data.chatHistory) && data.chatHistory.length > 0
+                  ? data.chatHistory.map((m: any) => ({
+                      ...m,
+                      isSelf: (m.senderId || m.id) === data.id,
+                    }))
+                  : get().messages
+
               set({
                 myId: data.id,
                 players: data.players || {},
+                messages: incomingHistory.slice(-30),
               })
             } else if (data.type === 'player_joined') {
               set((state) => ({
@@ -280,7 +289,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
                 messages: [
                   ...state.messages,
                   {
-                    id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                    id: `sys-${data.player.id}-${Date.now()}`,
                     senderId: 'system',
                     senderName: 'Hệ Thống 🐾',
                     text: `${data.player.name || 'Người chơi'} đã vào phòng 🐾`,
@@ -291,17 +300,22 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
               }))
             } else if (data.type === 'chat') {
               const myId = get().myId
+              const sender = data.senderId || data.id
               const newMsg: ChatMessage = {
-                id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                senderId: data.id,
-                senderName: data.name || 'Người chơi',
+                id: data.id || `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                senderId: sender,
+                senderName: data.senderName || data.name || 'Người chơi',
                 text: data.text,
                 timestamp: data.timestamp || Date.now(),
-                isSelf: data.id === myId,
+                isSelf: sender === myId,
+                isSystem: data.isSystem,
               }
-              set((state) => ({
-                messages: [...state.messages, newMsg].slice(-30),
-              }))
+              set((state) => {
+                if (state.messages.some((m) => m.id === newMsg.id)) return state
+                return {
+                  messages: [...state.messages, newMsg].slice(-30),
+                }
+              })
             } else if (data.type === 'player_updated') {
               set((state) => {
                 const existing = state.players[data.id]
