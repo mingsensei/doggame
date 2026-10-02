@@ -28,13 +28,13 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
 
   // Status badge config
   const stateBadges: Record<string, { label: string; bg: string }> = {
-    IDLE: { label: '🐶 Relaxed', bg: 'bg-emerald-500/80 text-white' },
-    WALKING: { label: '🐾 Trotting', bg: 'bg-sky-500/80 text-white' },
-    RUNNING: { label: '⚡ Zoomies!', bg: 'bg-amber-500/90 text-white' },
-    JUMPING: { label: '🐾 Leaping', bg: 'bg-emerald-600/90 text-white' },
-    BARKING: { label: '🔊 Woof!', bg: 'bg-rose-500/90 text-white' },
-    PEEING: { label: '💦 Marking Territory', bg: 'bg-yellow-500/90 text-white' },
-    SNIFFING: { label: '👃 Sniffing', bg: 'bg-indigo-500/80 text-white' },
+    IDLE: { label: '🐶 Thư giãn', bg: 'bg-emerald-500/80 text-white' },
+    WALKING: { label: '🐾 Đi dạo', bg: 'bg-sky-500/80 text-white' },
+    RUNNING: { label: '⚡ Chạy nhanh', bg: 'bg-amber-500/90 text-white' },
+    JUMPING: { label: '🐾 Nhảy lên', bg: 'bg-emerald-600/90 text-white' },
+    BARKING: { label: '🔊 Gâu gâu!', bg: 'bg-rose-500/90 text-white' },
+    PEEING: { label: '💦 Đánh dấu', bg: 'bg-yellow-500/90 text-white' },
+    SNIFFING: { label: '👃 Đánh hơi', bg: 'bg-indigo-500/80 text-white' },
   }
 
   const badge = stateBadges[state] || stateBadges.IDLE
@@ -44,13 +44,13 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
   let actionKey = 'E'
   if (activeTarget) {
     if (activeTarget.type === 'bone') {
-      actionPrompt = 'Grab Golden Bone'
+      actionPrompt = 'Nhặt Xương Vàng'
       actionKey = 'F'
     } else if (activeTarget.type === 'bush' || activeTarget.type === 'tree') {
-      actionPrompt = 'Sniff & Mark'
+      actionPrompt = 'Ngửi & Đánh Dấu'
       actionKey = 'E'
     } else {
-      actionPrompt = 'Interact'
+      actionPrompt = 'Tương tác'
       actionKey = 'E'
     }
   }
@@ -144,31 +144,31 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
         <div className="bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 space-y-1">
           <div className="flex items-center gap-2">
             <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">WASD</span>
-            <span>Move</span>
+            <span>Di chuyển</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">SPACE</span>
-            <span>Jump</span>
+            <span>Nhảy</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">SHIFT</span>
-            <span>Sprint</span>
+            <span>Chạy nhanh</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">E</span>
-            <span>Bark / Mark</span>
+            <span>Sủa / Đánh dấu</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-1.5 py-0.5 rounded bg-amber-400/40 text-amber-200 font-mono text-[10px] font-bold">F</span>
-            <span className="text-amber-200 font-medium">Collect Bone</span>
+            <span className="text-amber-200 font-medium">Nhặt Xương</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-1.5 py-0.5 rounded bg-yellow-400/40 text-yellow-200 font-mono text-[10px] font-bold">Q</span>
-            <span className="text-yellow-200 font-medium">Territory Expansion (Ult)</span>
+            <span className="text-yellow-200 font-medium">Mở Lãnh Địa</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">DRAG</span>
-            <span>Orbit Camera</span>
+            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">CHUỘT</span>
+            <span>Xoay góc nhìn</span>
           </div>
         </div>
 
@@ -185,10 +185,10 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
               <div className="text-left">
                 <div className="text-[10px] uppercase tracking-wider text-black/70 flex items-center gap-1.5">
                   <span className="px-1.5 py-0.2 rounded bg-black text-white font-mono text-[9px]">Q</span>
-                  <span>Ultimate Ready</span>
+                  <span>Sẵn Sàng</span>
                 </div>
                 <div className="text-sm font-extrabold tracking-wide text-black drop-shadow-sm">
-                  Territory Expansion
+                  Bành Trướng Lãnh Địa
                 </div>
               </div>
             </button>
@@ -202,10 +202,10 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-yellow-200 font-bold flex items-center gap-1.5">
                   <span className="animate-ping inline-flex h-2 w-2 rounded-full bg-yellow-300 opacity-75"></span>
-                  <span>Domain Active</span>
+                  <span>Đang Kích Hoạt</span>
                 </div>
                 <div className="text-sm font-extrabold tracking-wide text-white flex items-center gap-2">
-                  <span>Chaos: {activeTimer.toFixed(1)}s</span>
+                  <span>Còn lại: {activeTimer.toFixed(1)}s</span>
                   <div className="w-16 h-1.5 bg-black/40 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-yellow-300 transition-all duration-100"
@@ -224,10 +224,10 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
               </div>
               <div className="text-right">
                 <div className="text-[10px] uppercase tracking-wider text-white/40">
-                  Territory Expansion
+                  Lãnh Địa
                 </div>
                 <div className="text-xs font-mono font-bold text-amber-300/80">
-                  {cooldownTimer.toFixed(1)}s Cooldown
+                  Hồi chiêu: {cooldownTimer.toFixed(1)}s
                 </div>
               </div>
               {/* Radial or linear CD indicator */}
@@ -243,7 +243,7 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
           )}
 
           <div className="text-right text-[11px] text-white/50 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/5">
-            Explore the grass field & collect all 8 bones! 🐕
+            Tìm đủ 8 khúc xương vàng trong bãi cỏ nhé! 🐕
           </div>
         </div>
       </div>

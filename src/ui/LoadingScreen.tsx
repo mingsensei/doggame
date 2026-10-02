@@ -10,8 +10,8 @@ const TIPS = [
   'Mẹo: Đến gần các khúc xương phát sáng và bấm [F] để nhặt.',
   'Mẹo: Bấm phím [Space] để nhảy qua các bụi cỏ và chướng ngại vật.',
   'Mẹo: Bấm [E] để sủa hoặc đánh dấu lãnh thổ tại các gốc cây thông.',
-  'Mẹo: Giữ [Shift] để chạy nước rút (sprint) với tốc độ cao!',
-  'Multiplayer: Những người chơi khác vào game sẽ thấy tên và chuyển động của bạn!',
+  'Mẹo: Giữ [Shift] để chạy nước rút với tốc độ cao!',
+  'Bạn bè: Những người chơi khác trong thế giới sẽ thấy tên và cùng chạy nhảy với bạn!',
 ]
 
 export function LoadingScreen({ onLoaded }: LoadingScreenProps): JSX.Element {
@@ -55,7 +55,7 @@ export function LoadingScreen({ onLoaded }: LoadingScreenProps): JSX.Element {
       {/* Top Brand Tag */}
       <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold tracking-wider uppercase">
         <span className="text-amber-400">🐕</span>
-        <span>Dog World: Multiplayer Online</span>
+        <span>Dog World</span>
       </div>
 
       {/* Center Animated Loader */}
@@ -73,7 +73,7 @@ export function LoadingScreen({ onLoaded }: LoadingScreenProps): JSX.Element {
         </h2>
 
         <p className="text-xs md:text-sm text-white/60 mb-6 font-medium">
-          Tải mô hình 3D, kết cấu đồng cỏ, âm thanh & đồng bộ phòng chơi
+          Đang chuẩn bị cỏ hoa, xương thưởng và đón bạn bè...
         </p>
 
         {/* Progress Bar Container */}

@@ -51,15 +51,15 @@ export function EntryScreen({ onJoin }: EntryScreenProps): JSX.Element {
         {/* Game Title & Badge */}
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold tracking-wider uppercase mb-3">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>Multiplayer Online</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Chơi Cùng Bạn Bè</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-amber-200 via-yellow-300 to-emerald-300 bg-clip-text text-transparent flex items-center justify-center gap-3">
             <span>🐕</span>
             <span>DOG WORLD</span>
           </h1>
           <p className="text-white/60 text-xs md:text-sm mt-1">
-            Mô phỏng thế giới mở 3D chân thực & kết nối cùng bạn bè
+            Khám phá thế giới cún cưng rộng lớn & vui nhộn
           </p>
         </div>
 
@@ -93,14 +93,14 @@ export function EntryScreen({ onJoin }: EntryScreenProps): JSX.Element {
           {/* Graphics Quality Preset Selector */}
           <div>
             <label className="block text-xs font-semibold text-white/80 uppercase tracking-wider mb-2">
-              ⚡ Tùy chọn đồ họa & Hiệu năng
+              ⚡ Chất lượng hiển thị
             </label>
             <div className="grid grid-cols-3 gap-2">
               {(
                 [
-                  { id: 'low', label: 'Siêu Mượt', sub: 'Max FPS', icon: '⚡' },
-                  { id: 'balanced', label: 'Cân Bằng', sub: 'Chuẩn 60FPS', icon: '⚖️' },
-                  { id: 'cinematic', label: 'Điện Ảnh', sub: 'PBR & Bloom', icon: '✨' },
+                  { id: 'low', label: 'Mượt mà', sub: 'Tiết kiệm pin', icon: '⚡' },
+                  { id: 'balanced', label: 'Tiêu chuẩn', sub: 'Khuyên dùng', icon: '⚖️' },
+                  { id: 'cinematic', label: 'Sắc nét', sub: 'Hình ảnh đẹp', icon: '✨' },
                 ] as const
               ).map((item) => (
                 <button
@@ -121,21 +121,12 @@ export function EntryScreen({ onJoin }: EntryScreenProps): JSX.Element {
             </div>
           </div>
 
-          {/* Server Connection Status */}
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-2.5 flex items-center justify-between text-xs text-emerald-300">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Máy chủ WebSocket: Sẵn sàng</span>
-            </div>
-            <span className="font-mono text-[10px] text-emerald-400/80">ws://online</span>
-          </div>
-
           {/* Submit CTA Button */}
           <button
             type="submit"
             className="w-full mt-2 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-black font-extrabold text-base tracking-wide shadow-[0_0_30px_rgba(251,197,49,0.6)] hover:shadow-[0_0_40px_rgba(251,197,49,0.8)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>VÀO THẾ GIỚI CÚN (PLAY)</span>
+            <span>VÀO CHƠI NGAY</span>
             <span className="text-xl">🐾</span>
           </button>
         </form>
