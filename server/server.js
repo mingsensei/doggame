@@ -247,4 +247,20 @@ function broadcast(msg, excludeId = null) {
 
 server.listen(PORT, () => {
   console.log(`🐕 Dog World WebSocket Server running on ws://localhost:${PORT}/ws`)
+
+  // ── Keep-Alive Self Ping (Prevents Render Free tier from spinning down after 15m) ──
+  const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || 'https://doggame.onrender.com'
+  const PING_INTERVAL_MS = 12 * 60 * 1000 // Every 12 minutes (Render sleeps after 15m)
+
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER || process.env.RENDER_EXTERNAL_URL) {
+    console.log(`⏱️ Keep-Alive service scheduled for ${keepAliveUrl} every 12 minutes.`)
+    setInterval(async () => {
+      try {
+        const res = await fetch(keepAliveUrl)
+        console.log(`💓 [KeepAlive] Pinged ${keepAliveUrl} - Status: ${res.status}`)
+      } catch (err) {
+        console.warn(`⚠️ [KeepAlive] Ping failed:`, err.message)
+      }
+    }, PING_INTERVAL_MS)
+  }
 })
