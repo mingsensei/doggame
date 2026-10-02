@@ -158,9 +158,11 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
     set({ status: 'CONNECTING', myName: playerName })
 
     // Determine WebSocket endpoint
+    const envWs = (import.meta.env.VITE_WS_URL as string | undefined)?.trim()
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const devUrl = `${proto}//${window.location.host}/ws`
-    const fallbackUrl = `ws://${window.location.hostname}:3001/ws`
+    const defaultUrl = `${proto}//${window.location.host}/ws`
+    const devUrl = envWs || defaultUrl
+    const fallbackUrl = envWs || `ws://${window.location.hostname}:3001/ws`
 
     const tryConnect = (url: string, isFallback = false) => {
       try {
