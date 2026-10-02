@@ -159,10 +159,13 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
 
     // Determine WebSocket endpoint
     const envWs = (import.meta.env.VITE_WS_URL as string | undefined)?.trim()
+    const isLocal =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const defaultUrl = `${proto}//${window.location.host}/ws`
+    const defaultUrl = isLocal ? `${proto}//${window.location.host}/ws` : 'wss://doggame.onrender.com/ws'
     const devUrl = envWs || defaultUrl
-    const fallbackUrl = envWs || `ws://${window.location.hostname}:3001/ws`
+    const fallbackUrl = envWs || (isLocal ? `ws://${window.location.hostname}:3001/ws` : 'wss://doggame.onrender.com/ws')
 
     const tryConnect = (url: string, isFallback = false) => {
       try {
