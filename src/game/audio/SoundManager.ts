@@ -520,6 +520,123 @@ class SoundManager {
       osc.stop(now + idx * 0.06 + 0.45)
     })
   }
+
+  /**
+   * Transformation Sound (Form 1 <-> Form 2 energetic power surge)
+   */
+  public playTransform() {
+    const ctx = this.initContext()
+    const volume = this.getSfxGain()
+    if (volume <= 0.001) return
+
+    const now = ctx.currentTime
+
+    // Rising energy power sweep
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(160, now)
+    osc.frequency.exponentialRampToValueAtTime(720, now + 0.28)
+
+    const filter = ctx.createBiquadFilter()
+    filter.type = 'lowpass'
+    filter.frequency.setValueAtTime(400, now)
+    filter.frequency.exponentialRampToValueAtTime(2400, now + 0.25)
+
+    gain.gain.setValueAtTime(0.22 * volume, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
+
+    osc.connect(filter)
+    filter.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(now)
+    osc.stop(now + 0.36)
+
+    // Flash chime
+    const chime = ctx.createOscillator()
+    const chimeGain = ctx.createGain()
+    chime.type = 'sine'
+    chime.frequency.setValueAtTime(880, now + 0.15)
+    chime.frequency.exponentialRampToValueAtTime(1760, now + 0.3)
+    chimeGain.gain.setValueAtTime(0.12 * volume, now + 0.15)
+    chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45)
+    chime.connect(chimeGain)
+    chimeGain.connect(ctx.destination)
+    chime.start(now + 0.15)
+    chime.stop(now + 0.46)
+  }
+
+  /**
+   * Martial Arts Punch/Kick Combo Sound
+   */
+  public playPunch(step: number) {
+    const ctx = this.initContext()
+    const volume = this.getSfxGain()
+    if (volume <= 0.001) return
+
+    const now = ctx.currentTime
+
+    // 1. Whoosh noise burst
+    const noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.12), ctx.sampleRate)
+    const data = noiseBuf.getChannelData(0)
+    for (let i = 0; i < noiseBuf.length; i++) data[i] = (Math.random() * 2 - 1) * 0.2
+    const noise = ctx.createBufferSource()
+    noise.buffer = noiseBuf
+
+    const nFilter = ctx.createBiquadFilter()
+    nFilter.type = 'bandpass'
+    const whooshFreq = step === 3 ? 1200 : step === 4 ? 600 : 900
+    nFilter.frequency.setValueAtTime(whooshFreq, now)
+    nFilter.Q.setValueAtTime(1.5, now)
+
+    const nGain = ctx.createGain()
+    nGain.gain.setValueAtTime(0.16 * volume, now)
+    nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12)
+
+    noise.connect(nFilter)
+    nFilter.connect(nGain)
+    nGain.connect(ctx.destination)
+    noise.start(now)
+
+    // 2. Impact hit punch body thud
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    if (step === 1) {
+      // Fast Jab: higher snappy slap
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(260, now + 0.02)
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.12)
+      gain.gain.setValueAtTime(0.24 * volume, now + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14)
+    } else if (step === 2) {
+      // Right Hook: heavy thud
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(220, now + 0.02)
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.16)
+      gain.gain.setValueAtTime(0.3 * volume, now + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18)
+    } else if (step === 3) {
+      // Spin Kick: resonant crack
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(320, now + 0.03)
+      osc.frequency.exponentialRampToValueAtTime(70, now + 0.2)
+      gain.gain.setValueAtTime(0.32 * volume, now + 0.03)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22)
+    } else {
+      // Power Slam: massive bass boom
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(180, now + 0.02)
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.3)
+      gain.gain.setValueAtTime(0.4 * volume, now + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
+    }
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(now + 0.02)
+    osc.stop(now + 0.36)
+  }
 }
 
 export const soundManager = new SoundManager()

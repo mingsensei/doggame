@@ -3,9 +3,12 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier'
 import type { RapierRigidBody } from '@react-three/rapier'
 import { useDogMovement } from './DogController'
 import { DogModel } from './DogModel'
+import { DogWarriorModel } from './DogWarriorModel'
+import { useDogStore } from '@/stores/useDogStore'
 
 export function Dog(): JSX.Element {
   const rigidBodyRef = useRef<RapierRigidBody>(null)
+  const form = useDogStore((s) => s.form)
 
   // Hook handles physics velocity, rotation, and FSM updates
   useDogMovement(rigidBodyRef)
@@ -21,10 +24,13 @@ export function Dog(): JSX.Element {
       name="dog"
     >
       {/* Box / Capsule collider for dog physics */}
-      <CuboidCollider args={[0.3, 0.35, 0.45]} position={[0, 0.35, 0]} />
+      <CuboidCollider
+        args={[0.3, form === 2 ? 0.65 : 0.35, 0.45]}
+        position={[0, form === 2 ? 0.65 : 0.35, 0]}
+      />
 
-      {/* Animated Dog Model */}
-      <DogModel />
+      {/* Form 1: Shiba Inu | Form 2: Dog Warrior Humanoid */}
+      {form === 1 ? <DogModel /> : <DogWarriorModel />}
     </RigidBody>
   )
 }

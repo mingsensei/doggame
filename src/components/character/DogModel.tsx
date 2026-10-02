@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import * as THREE from 'three'
 import { useDogStore, type DogState } from '@/stores/useDogStore'
-import { useUltimateStore } from '@/stores/useUltimateStore'
 
 /**
  * Animated Shiba Inu 3D Model
@@ -93,37 +92,13 @@ export function DogModel(): JSX.Element {
     }
   })
 
-  const ultimatePhase = useUltimateStore((s) => s.phase)
-  const isUltimateActive = ultimatePhase === 'ACTIVATING' || ultimatePhase === 'CHAOS'
-
   return (
     <group ref={groupRef}>
-      {/* 
-        Scaled to realistic dog size (~0.85m height, 1.15m length)
-        and centered on ground plane
-      */}
       <primitive
         object={scene}
         scale={[0.26, 0.26, 0.26]}
         position={[0, 0, 0]}
       />
-
-      {/* Domain Master Golden Aura VFX */}
-      {isUltimateActive && (
-        <group position={[0, 0.35, 0]}>
-          <pointLight color="#fbc531" intensity={3.5} distance={4} />
-          {/* Ground aura ring */}
-          <mesh position={[0, -0.32, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[0.45, 0.85, 32]} />
-            <meshBasicMaterial color="#fbc531" transparent opacity={0.65} side={THREE.DoubleSide} />
-          </mesh>
-          {/* Vertical spinning halo */}
-          <mesh rotation={[Math.PI / 4, 0, 0]}>
-            <torusGeometry args={[0.65, 0.03, 16, 32]} />
-            <meshBasicMaterial color="#ffeaa7" transparent opacity={0.7} />
-          </mesh>
-        </group>
-      )}
     </group>
   )
 }

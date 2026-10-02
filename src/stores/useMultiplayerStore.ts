@@ -9,7 +9,8 @@ export interface RemotePlayer {
   rotation: number
   state: DogState
   speed: number
-  lastAction?: 'bark' | 'jump' | 'ultimate'
+  form?: 1 | 2
+  lastAction?: 'bark' | 'jump' | 'transform' | 'attack'
   lastActionTimestamp?: number
 }
 
@@ -20,8 +21,14 @@ interface MultiplayerStore {
   players: Record<string, RemotePlayer>
   connect: (playerName: string) => void
   disconnect: () => void
-  sendUpdate: (pos: [number, number, number], rot: number, state: DogState, speed: number) => void
-  sendAction: (action: 'bark' | 'jump' | 'ultimate') => void
+  sendUpdate: (
+    pos: [number, number, number],
+    rot: number,
+    state: DogState,
+    speed: number,
+    form?: 1 | 2
+  ) => void
+  sendAction: (action: 'bark' | 'jump' | 'transform' | 'attack') => void
 }
 
 let socket: WebSocket | null = null
@@ -203,6 +210,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
                       rotation: data.rotation,
                       state: data.state,
                       speed: data.speed,
+                      form: data.form ?? existing.form ?? 1,
                       lastAction: clearBark ? undefined : existing.lastAction,
                     },
                   },
@@ -229,8 +237,10 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
                 soundManager.playBark()
               } else if (data.action === 'jump') {
                 soundManager.playJump()
-              } else if (data.action === 'ultimate') {
-                soundManager.playUltimateActivation()
+              } else if (data.action === 'transform') {
+                soundManager.playTransform()
+              } else if (data.action === 'attack') {
+                soundManager.playPunch(Math.floor(Math.random() * 4) + 1)
               }
             } else if (data.type === 'player_left') {
               set((state) => {
@@ -279,7 +289,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
     set({ status: 'DISCONNECTED', myId: null, players: {} })
   },
 
-  sendUpdate: (position, rotation, state, speed) => {
+  sendUpdate: (position, rotation, state, speed, form = 1) => {
     const now = Date.now()
     if (now - lastUpdateSent < UPDATE_INTERVAL_MS) return
     lastUpdateSent = now
@@ -292,6 +302,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
           rotation,
           state,
           speed,
+          form,
         })
       )
     }

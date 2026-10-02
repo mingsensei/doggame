@@ -5,7 +5,6 @@ import { Ground } from './Ground'
 import { World } from './World'
 import { Dog } from '@/components/character/Dog'
 import { RemotePlayers } from '@/components/character/RemotePlayers'
-import { TerritoryExpansion } from '@/components/character/TerritoryExpansion'
 import { ThirdPersonCamera } from '@/components/camera/ThirdPersonCamera'
 import { PeeEffect } from '@/components/effects/PeeEffect'
 import { BarkEffect } from '@/components/effects/BarkEffect'
@@ -31,7 +30,6 @@ export function Scene(): JSX.Element {
           <World />
           <Dog />
           <RemotePlayers />
-          <TerritoryExpansion />
           <PeeEffect />
           <BarkEffect />
           <FootstepParticles />

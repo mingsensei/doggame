@@ -5,7 +5,6 @@ import * as THREE from 'three'
 import { useDogStore } from '@/stores/useDogStore'
 import { useInputStore } from '@/stores/useInputStore'
 import { useInteractionStore } from '@/stores/useInteractionStore'
-import { useUltimateStore } from '@/stores/useUltimateStore'
 import { useMultiplayerStore } from '@/stores/useMultiplayerStore'
 import { cameraDirection } from '@/stores/cameraDirection'
 import {
@@ -34,19 +33,29 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
     const rb = rigidBodyRef.current
     if (!rb) return
 
-    const { state, isLocked, setState, setPosition, setRotation, setSpeed } =
-      useDogStore.getState()
-    const { forward, backward, left, right, run, jump, interact, ultimate } = useInputStore.getState()
+    const {
+      state,
+      form,
+      isLocked,
+      setState,
+      setPosition,
+      setRotation,
+      setSpeed,
+      toggleForm,
+      triggerAttack,
+    } = useDogStore.getState()
+    const { forward, backward, left, right, run, jump, interact, ultimate, attack } =
+      useInputStore.getState()
     const { activeTarget } = useInteractionStore.getState()
-    const ultimatePhase = useUltimateStore.getState().phase
 
     // Read current physics translation & linear velocity
     const pos = rb.translation()
     const curLinvel = rb.linvel()
     setPosition([pos.x, pos.y, pos.z])
 
-    // Ground contact check (dog collider center is at y=0.35, rest is around 0.05 - 0.25)
-    const isGrounded = pos.y < 0.45 && Math.abs(curLinvel.y) < 2.5
+    // Ground contact check (taller in Form 2)
+    const groundThreshold = form === 2 ? 0.75 : 0.45
+    const isGrounded = pos.y < groundThreshold && Math.abs(curLinvel.y) < 3.0
 
     // Calculate raw input vector
     inputDir.set(0, 0, 0)
@@ -58,7 +67,7 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
     const isMoving = inputDir.lengthSq() > 0.001
 
     // When the dog starts moving, automatically stop barking or sniffing immediately
-    if (isMoving && (state === 'BARKING' || state === 'SNIFFING') && ultimatePhase !== 'ACTIVATING') {
+    if (isMoving && (state === 'BARKING' || state === 'SNIFFING')) {
       if (actionTimeoutRef.current) {
         clearTimeout(actionTimeoutRef.current)
         actionTimeoutRef.current = null
@@ -66,19 +75,23 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
       setState(run ? 'RUNNING' : 'WALKING')
     }
 
-    // Handle Ultimate Skill Trigger (Q key)
+    // ── Handle Form Transformation (Q key) ─────────────────────
     if (ultimate && !isLocked()) {
       useInputStore.getState().setKey('ultimate', false)
-      const triggered = useUltimateStore.getState().triggerUltimate([pos.x, pos.y, pos.z])
-      if (triggered) {
-        useMultiplayerStore.getState().sendAction('ultimate')
-        setState('BARKING') // Activation roar/bark stance
-        if (actionTimeoutRef.current) clearTimeout(actionTimeoutRef.current)
-        actionTimeoutRef.current = window.setTimeout(() => {
-          if (useDogStore.getState().state === 'BARKING') {
-            useDogStore.getState().setState('IDLE')
-          }
-        }, 1100)
+      const nextForm = toggleForm()
+      soundManager.playTransform()
+      useMultiplayerStore.getState().sendAction('transform')
+    }
+
+    // ── Handle Combat Attack Combo (Left Mouse Click in Form 2) ───
+    if (attack && !isLocked()) {
+      useInputStore.getState().setKey('attack', false)
+      if (form === 2) {
+        const step = triggerAttack()
+        if (step > 0) {
+          soundManager.playPunch(step)
+          useMultiplayerStore.getState().sendAction('attack')
+        }
       }
     }
 
@@ -86,7 +99,7 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
     if (jump && isGrounded && !isLocked()) {
       useInputStore.getState().setKey('jump', false)
       useMultiplayerStore.getState().sendAction('jump')
-      const JUMP_IMPULSE = 8.5
+      const JUMP_IMPULSE = form === 2 ? 9.5 : 8.5
       rb.setLinvel({ x: curLinvel.x, y: JUMP_IMPULSE, z: curLinvel.z }, true)
       setState('JUMPING')
       soundManager.playJump()
@@ -126,8 +139,8 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
       }
     }
 
-    // If dog is currently barking, peeing, or activating ultimate: smoothly brake to zero
-    if (isLocked() || ultimatePhase === 'ACTIVATING') {
+    // If dog is currently peeing: smoothly brake to zero
+    if (isLocked()) {
       currentSpeed.current = lerp(currentSpeed.current, 0, 1 - Math.exp(-10 * delta))
       const curLinvel = rb.linvel()
       rb.setLinvel({ x: 0, y: curLinvel.y, z: 0 }, true)
@@ -149,8 +162,8 @@ export function useDogMovement(rigidBodyRef: React.RefObject<RapierRigidBody>) {
         )
         .normalize()
 
-      // Target Movement Speed with Smooth Acceleration Curve (enhanced during CHAOS!)
-      const speedMultiplier = ultimatePhase === 'CHAOS' ? 1.35 : 1.0
+      // Target Movement Speed with Smooth Acceleration Curve (Form 2 has 1.2x warrior agility)
+      const speedMultiplier = form === 2 ? 1.2 : 1.0
       const targetSpeed = (run ? RUN_SPEED : WALK_SPEED) * speedMultiplier
       const accelRate = run ? 6.5 : 8.5
       currentSpeed.current = lerp(

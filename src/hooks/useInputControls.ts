@@ -64,6 +64,20 @@ export function useInputControls(): void {
     }
 
     const onMouseDown = (e: MouseEvent): void => {
+      // Ignore clicks on HUD buttons or input elements
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'INPUT')
+      ) {
+        return
+      }
+
+      // Left click triggers combat attack in Form 2
+      if (e.button === 0) {
+        setKey('attack', true)
+      }
+
       // Drag with left or right click
       if (e.button === 0 || e.button === 2) {
         isDraggingRef.current = true
@@ -79,8 +93,11 @@ export function useInputControls(): void {
       setMouseDelta(dx, dy)
     }
 
-    const onMouseUp = (): void => {
+    const onMouseUp = (e: MouseEvent): void => {
       isDraggingRef.current = false
+      if (e.button === 0) {
+        setKey('attack', false)
+      }
     }
 
     const onWheel = (e: WheelEvent): void => {

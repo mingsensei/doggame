@@ -6,12 +6,13 @@ interface LoadingScreenProps {
 }
 
 const TIPS = [
-  'Mẹo: Bấm phím [Q] để mở "Lãnh Địa" triệu hồi bầy cún con chạy quanh bạn!',
+  'Mẹo: Bấm phím [Q] để chuyển đổi giữa Cún 4 chân và Chiến Binh Chó dạng người!',
+  'Chiến đấu: Khi ở dạng Chiến Binh, nhấp chuột trái liên tục để tung combo đấm đá liên hoàn!',
   'Mẹo: Đến gần các khúc xương phát sáng và bấm [F] để nhặt.',
   'Mẹo: Bấm phím [Space] để nhảy qua các bụi cỏ và chướng ngại vật.',
   'Mẹo: Bấm [E] để sủa hoặc đánh dấu lãnh thổ tại các gốc cây thông.',
   'Mẹo: Giữ [Shift] để chạy nước rút với tốc độ cao!',
-  'Bạn bè: Những người chơi khác trong thế giới sẽ thấy tên và cùng chạy nhảy với bạn!',
+  'Bạn bè: Những người chơi khác trong thế giới sẽ thấy dạng biến hình và cùng chạy nhảy với bạn!',
 ]
 
 export function LoadingScreen({ onLoaded }: LoadingScreenProps): JSX.Element {

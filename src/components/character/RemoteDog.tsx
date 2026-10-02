@@ -17,11 +17,12 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
   const targetPos = useRef(new THREE.Vector3(...player.position))
   const targetRot = useRef(player.rotation)
 
-  const { scene, animations } = useGLTF('/assets/models/dog.glb')
+  const { scene: dogScene, animations } = useGLTF('/assets/models/dog.glb')
+  const { scene: warriorScene } = useGLTF('/assets/models/dogwarrior.glb')
 
   // Clone skeletal hierarchy independently for each remote player
-  const clonedScene = useMemo(() => {
-    const cloned = cloneSkeleton(scene)
+  const clonedDogScene = useMemo(() => {
+    const cloned = cloneSkeleton(dogScene)
     cloned.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         child.castShadow = true
@@ -29,7 +30,18 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
       }
     })
     return cloned
-  }, [scene])
+  }, [dogScene])
+
+  const clonedWarriorScene = useMemo(() => {
+    const cloned = warriorScene.clone(true)
+    cloned.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        child.castShadow = true
+        child.receiveShadow = true
+      }
+    })
+    return cloned
+  }, [warriorScene])
 
   const { actions } = useAnimations(animations, groupRef)
 
@@ -57,6 +69,7 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
 
   // Handle animation crossfades
   useEffect(() => {
+    if (player.form === 2) return
     const nextAction = getActionForState(player.state)
     const prevAction = currentActionRef.current
 
@@ -65,7 +78,7 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
       nextAction.reset().fadeIn(0.18).play()
       currentActionRef.current = nextAction
     }
-  }, [actions, player.state])
+  }, [actions, player.state, player.form])
 
   // Update interpolation targets when props change
   useEffect(() => {
@@ -102,29 +115,31 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
     }
   }, [player.state, player.lastAction, player.lastActionTimestamp])
 
-  const isUltimate =
-    player.lastAction === 'ultimate' && Date.now() - (player.lastActionTimestamp || 0) < 7000
+  const isAttacking =
+    player.lastAction === 'attack' && Date.now() - (player.lastActionTimestamp || 0) < 600
 
   const isBot = player.name === 'mingsensei'
+  const isForm2 = player.form === 2
 
   return (
     <group ref={groupRef} position={player.position} rotation={[0, player.rotation, 0]}>
-      {/* Shiba Inu Model */}
-      <primitive object={clonedScene} scale={[0.26, 0.26, 0.26]} />
-
-      {/* Ultimate Golden Aura */}
-      {isUltimate && (
-        <group position={[0, 0.35, 0]}>
-          <pointLight color="#fbc531" intensity={3} distance={4} />
-          <mesh position={[0, -0.32, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[0.45, 0.85, 32]} />
-            <meshBasicMaterial color="#fbc531" transparent opacity={0.65} side={THREE.DoubleSide} />
-          </mesh>
+      {/* Form 1: Shiba Inu | Form 2: Dog Warrior Humanoid */}
+      {isForm2 ? (
+        <group>
+          <primitive object={clonedWarriorScene} scale={[1.35, 1.35, 1.35]} />
+          {isAttacking && (
+            <mesh position={[0, 0.8, 0.5]}>
+              <ringGeometry args={[0.25, 0.6, 24]} />
+              <meshBasicMaterial color="#fbc531" transparent opacity={0.8} side={THREE.DoubleSide} />
+            </mesh>
+          )}
         </group>
+      ) : (
+        <primitive object={clonedDogScene} scale={[0.26, 0.26, 0.26]} />
       )}
 
       {/* Floating 3D Name Tag & Emotes */}
-      <Html position={[0, 1.15, 0]} center distanceFactor={14}>
+      <Html position={[0, isForm2 ? 1.6 : 1.15, 0]} center distanceFactor={14}>
         <div className="flex flex-col items-center pointer-events-none select-none">
           {/* Bark speech bubble (automatically hides when barking finishes) */}
           {showBarkBubble && (
@@ -133,16 +148,16 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
             </div>
           )}
 
-          {/* Ultimate title badge */}
-          {isUltimate && (
-            <div className="mb-1 px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-bold text-[10px] rounded-full shadow-lg border border-yellow-200 animate-pulse">
-              👑 LÃNH ĐỊA!
+          {/* Form 2 warrior badge */}
+          {isForm2 && (
+            <div className="mb-1 px-2.5 py-0.5 bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold text-[10px] rounded-full shadow-lg border border-yellow-200 animate-pulse">
+              🐺 CHIẾN BINH
             </div>
           )}
 
           {/* Player Name Badge */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white font-semibold text-xs rounded-full border border-white/20 shadow-md">
-            <span className="text-[10px]">{isBot ? '🤖' : '🐾'}</span>
+            <span className="text-[10px]">{isBot ? '🤖' : isForm2 ? '🐺' : '🐾'}</span>
             <span className={isBot ? 'text-yellow-300 font-extrabold' : 'text-amber-300 font-bold'}>
               {player.name}
             </span>
@@ -157,3 +172,6 @@ export function RemoteDog({ player }: RemoteDogProps): JSX.Element {
     </group>
   )
 }
+
+useGLTF.preload('/assets/models/dog.glb')
+useGLTF.preload('/assets/models/dogwarrior.glb')

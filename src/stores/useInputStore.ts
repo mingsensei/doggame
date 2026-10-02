@@ -10,6 +10,7 @@ interface InputStore {
   interact: boolean
   collect: boolean
   ultimate: boolean
+  attack: boolean
   /** Camera mouse delta this frame */
   mouseDeltaX: number
   mouseDeltaY: number
@@ -31,6 +32,7 @@ export const useInputStore = create<InputStore>((set) => ({
   interact: false,
   collect: false,
   ultimate: false,
+  attack: false,
   mouseDeltaX: 0,
   mouseDeltaY: 0,
   mouseScrollDelta: 0,

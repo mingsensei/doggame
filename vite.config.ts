@@ -179,6 +179,7 @@ function multiplayerWebSocketPlugin(): Plugin {
                 player.data.rotation = msg.rotation
                 player.data.state = msg.state
                 player.data.speed = msg.speed
+                player.data.form = msg.form || 1
 
                 const updatePayload = JSON.stringify({
                   type: 'player_updated',
@@ -187,6 +188,7 @@ function multiplayerWebSocketPlugin(): Plugin {
                   rotation: msg.rotation,
                   state: msg.state,
                   speed: msg.speed,
+                  form: msg.form || 1,
                 })
                 for (const [id, p] of players.entries()) {
                   if (id !== playerId && p.ws.readyState === WebSocket.OPEN) p.ws.send(updatePayload)

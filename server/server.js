@@ -177,6 +177,7 @@ wss.on('connection', (ws) => {
           player.data.rotation = msg.rotation
           player.data.state = msg.state
           player.data.speed = msg.speed
+          player.data.form = msg.form || 1
 
           // Broadcast movement update to all other players
           broadcast(
@@ -187,6 +188,7 @@ wss.on('connection', (ws) => {
               rotation: msg.rotation,
               state: msg.state,
               speed: msg.speed,
+              form: msg.form || 1,
             },
             playerId
           )

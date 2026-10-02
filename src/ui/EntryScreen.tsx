@@ -135,7 +135,8 @@ export function EntryScreen({ onJoin }: EntryScreenProps): JSX.Element {
         <div className="text-center text-[11px] text-white/40">
           Phím điều khiển: <span className="text-white/70">WASD</span> di chuyển •{' '}
           <span className="text-white/70">Space</span> nhảy •{' '}
-          <span className="text-white/70">Q</span> Lãnh địa •{' '}
+          <span className="text-white/70">Q</span> chuyển dạng chiến binh •{' '}
+          <span className="text-white/70">Chuột Trái</span> đấm đá combo •{' '}
           <span className="text-white/70">F</span> nhặt xương
         </div>
       </div>

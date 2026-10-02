@@ -9,8 +9,8 @@ export function RemotePlayers(): JSX.Element {
 
   // Continuously sync local dog position/rotation/state/speed to server
   useFrame(() => {
-    const { position, rotation, state, speed } = useDogStore.getState()
-    sendUpdate(position, rotation, state, speed)
+    const { position, rotation, state, speed, form } = useDogStore.getState()
+    sendUpdate(position, rotation, state, speed, form)
   })
 
   return (
