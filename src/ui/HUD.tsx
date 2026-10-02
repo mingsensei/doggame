@@ -138,77 +138,85 @@ export function HUD({ onOpenSettings }: HUDProps): JSX.Element {
 
       {/* ── Bottom Controls & Ultimate Bar ──────────────────────── */}
       <div className="flex justify-between items-end text-xs text-white/70">
-        {/* Controls Legend */}
-        <div className="bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">WASD</span>
-            <span>Di chuyển</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">SPACE</span>
-            <span>Nhảy</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">SHIFT</span>
-            <span>Chạy nhanh</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">E</span>
-            <span>Sủa / Đánh dấu</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-amber-400/40 text-amber-200 font-mono text-[10px] font-bold">F</span>
-            <span className="text-amber-200 font-medium">Nhặt Xương</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-yellow-400/40 text-yellow-200 font-mono text-[10px] font-bold">Q</span>
-            <span className="text-yellow-200 font-medium">Mở Lãnh Địa</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">CHUỘT</span>
-            <span>Xoay góc nhìn</span>
-          </div>
-        </div>
-
-        {/* Controls Legend */}
-        <div className="bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">WASD</span>
-            <span>Di chuyển</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">SPACE</span>
-            <span>Nhảy</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">SHIFT</span>
-            <span>Chạy nhanh</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">E</span>
-            <span>Sủa / Đánh dấu</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-amber-400/40 text-amber-200 font-mono text-[10px] font-bold">F</span>
-            <span className="text-amber-200 font-medium">Nhặt Xương</span>
-          </div>
-          {form === 2 && (
-            <div className="flex items-center gap-2">
-              <span className="px-1.5 py-0.5 rounded bg-red-500/40 text-red-200 font-mono text-[10px] font-bold">CHUỘT TRÁI</span>
-              <span className="text-red-200 font-bold">Đấm Đá Combo</span>
+        {/* Controls Legend — Dạng Chó (Form 1) */}
+        {form === 1 && (
+          <div className="bg-black/50 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 space-y-1.5 shadow-xl">
+            <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <span>🐕</span>
+              <span>Điều khiển: Cún Shiba</span>
             </div>
-          )}
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-yellow-400/40 text-yellow-200 font-mono text-[10px] font-bold">Q</span>
-            <span className="text-yellow-200 font-medium">
-              {form === 1 ? 'Chuyển Dạng: Chiến Binh' : 'Về Dạng: Chó Cưng'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">WASD</span>
+              <span>Di chuyển</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">SPACE</span>
+              <span>Nhảy qua vật cản</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">SHIFT</span>
+              <span>Chạy nhanh</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">E</span>
+              <span>Sủa / Đánh dấu</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-amber-400/40 text-amber-200 font-mono text-[10px] font-bold">F</span>
+              <span className="text-amber-200 font-medium">Nhặt Xương Vàng</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-yellow-400/40 text-yellow-200 font-mono text-[10px] font-bold">Q</span>
+              <span className="text-yellow-200 font-bold">Biến Thành Chiến Binh 🐺</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">CHUỘT</span>
+              <span>Xoay góc nhìn</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white">CHUỘT</span>
-            <span>Xoay góc nhìn</span>
+        )}
+
+        {/* Controls Legend — Dạng Chiến Binh (Form 2) */}
+        {form === 2 && (
+          <div className="bg-black/60 backdrop-blur-md px-4 py-3 rounded-2xl border border-red-500/40 space-y-1.5 shadow-[0_0_20px_rgba(235,77,75,0.25)]">
+            <div className="text-[11px] font-bold text-red-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <span>🐺</span>
+              <span>Điều khiển: Chiến Binh Chó</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-red-500/30 text-red-200 border border-red-400/30 font-mono text-[10px] font-extrabold">CHUỘT TRÁI</span>
+              <span className="text-red-200 font-bold">Đấm Đá Combo (1-2-3-4)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">WASD</span>
+              <span>Di chuyển</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">SPACE</span>
+              <span>Bật nhảy cao</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">SHIFT</span>
+              <span>Chạy nhanh</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">E</span>
+              <span>Gầm gừ / Sủa</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-amber-400/40 text-amber-200 font-mono text-[10px] font-bold">F</span>
+              <span className="text-amber-200 font-medium">Nhặt Xương</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-yellow-400/40 text-yellow-200 font-mono text-[10px] font-bold">Q</span>
+              <span className="text-yellow-200 font-bold">Trở Về Dạng Cún 🐕</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold">CHUỘT PHẢI</span>
+              <span>Xoay góc nhìn</span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ── Form Transformation & Attack Combo Widget ──────── */}
         <div className="flex flex-col items-end gap-2 pointer-events-auto">
