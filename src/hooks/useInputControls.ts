@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useInputStore } from '@/stores/useInputStore'
+import { useMultiplayerStore } from '@/stores/useMultiplayerStore'
 
 const CODE_MAP: Record<string, keyof ReturnType<typeof useInputStore.getState>> = {
   KeyW: 'forward',
@@ -49,6 +50,24 @@ export function useInputControls(): void {
     const onKeyDown = (e: KeyboardEvent): void => {
       // Don't intercept refresh / devtools
       if (e.code === 'F5' || e.code === 'F12' || (e.ctrlKey && e.code === 'KeyR')) return
+
+      const target = e.target as HTMLElement | null
+      const isTyping =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+
+      // Press Enter to open chat when not typing
+      if ((e.code === 'Enter' || e.key === 'Enter') && !isTyping) {
+        e.preventDefault()
+        useMultiplayerStore.getState().setChatOpen(true)
+        return
+      }
+
+      // Ignore game controls while typing in input/textarea
+      if (isTyping) return
+
       const mapped = resolveKey(e)
       if (mapped) {
         if (mapped === 'jump') e.preventDefault()
@@ -57,6 +76,14 @@ export function useInputControls(): void {
     }
 
     const onKeyUp = (e: KeyboardEvent): void => {
+      const target = e.target as HTMLElement | null
+      const isTyping =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      if (isTyping) return
+
       const mapped = resolveKey(e)
       if (mapped) {
         setKey(mapped as Parameters<typeof setKey>[0], false)
@@ -64,11 +91,14 @@ export function useInputControls(): void {
     }
 
     const onMouseDown = (e: MouseEvent): void => {
-      // Ignore clicks on HUD buttons or input elements
+      // Ignore clicks on HUD buttons, inputs, or chat container
       const target = e.target as HTMLElement | null
       if (
         target &&
-        (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'INPUT')
+        (target.tagName === 'BUTTON' ||
+          target.closest('button') ||
+          target.tagName === 'INPUT' ||
+          target.closest('.chat-container'))
       ) {
         return
       }

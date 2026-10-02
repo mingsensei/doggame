@@ -203,6 +203,23 @@ function multiplayerWebSocketPlugin(): Plugin {
               for (const [id, p] of players.entries()) {
                 if (id !== playerId && p.ws.readyState === WebSocket.OPEN) p.ws.send(actionPayload)
               }
+            } else if (msg.type === 'chat') {
+              const player = players.get(playerId)
+              if (player && typeof msg.text === 'string') {
+                const text = msg.text.trim().slice(0, 200)
+                if (text) {
+                  const chatPayload = JSON.stringify({
+                    type: 'chat',
+                    id: playerId,
+                    name: (player.data.name as string) || 'Người chơi',
+                    text: text,
+                    timestamp: Date.now(),
+                  })
+                  for (const [, p] of players.entries()) {
+                    if (p.ws.readyState === WebSocket.OPEN) p.ws.send(chatPayload)
+                  }
+                }
+              }
             }
           } catch (e) {
             console.error('WS Error:', e)

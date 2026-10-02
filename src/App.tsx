@@ -7,6 +7,7 @@ import { LoadingScreen } from '@/ui/LoadingScreen'
 import { EntryScreen } from '@/ui/EntryScreen'
 import { SettingsPanel } from '@/ui/SettingsPanel'
 import { VictoryScreen } from '@/ui/VictoryScreen'
+import { ChatBox } from '@/ui/ChatBox'
 import { useInputControls } from '@/hooks/useInputControls'
 import { usePageVisibility } from '@/hooks/usePageVisibility'
 import { CAMERA_FOV_DEFAULT } from '@/utils/constants'
@@ -75,10 +76,11 @@ export default function App(): JSX.Element {
       {/* ── Loading Screen (Progress bar, tip carousel, 3D loader) ── */}
       {gameState === 'LOADING' && <LoadingScreen onLoaded={handleLoaded} />}
 
-      {/* ── In-Game HUD & Victory (when Playing) ── */}
+      {/* ── In-Game HUD, Chat & Victory (when Playing) ── */}
       {gameState === 'PLAYING' && (
         <>
           <HUD onOpenSettings={() => setShowSettings(true)} />
+          <ChatBox />
           <VictoryScreen />
         </>
       )}

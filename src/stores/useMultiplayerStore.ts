@@ -14,11 +14,25 @@ export interface RemotePlayer {
   lastActionTimestamp?: number
 }
 
+export interface ChatMessage {
+  id: string
+  senderId: string
+  senderName: string
+  text: string
+  timestamp: number
+  isSelf?: boolean
+  isSystem?: boolean
+}
+
 interface MultiplayerStore {
   status: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'OFFLINE'
   myId: string | null
   myName: string
   players: Record<string, RemotePlayer>
+  messages: ChatMessage[]
+  isChatOpen: boolean
+  setChatOpen: (open: boolean) => void
+  sendChatMessage: (text: string) => void
   connect: (playerName: string) => void
   disconnect: () => void
   sendUpdate: (
@@ -101,6 +115,28 @@ function startLocalBot(set: any, get: any) {
       nextAction = 'bark'
       nextActionTimestamp = now
       soundManager.playBark()
+
+      if (Math.random() < 0.45) {
+        const quotes = [
+          'Gâu gâu! 🐕',
+          'Chào bạn nha! 🐾',
+          'Đố ai bắt được tui! 🏃💨',
+          'Thế giới này đẹp ghê! 🌸',
+          'Bạn tìm được mấy khúc xương rồi? 🦴',
+          'Woof woof! 🐶',
+        ]
+        const quote = quotes[Math.floor(Math.random() * quotes.length)]
+        const botMsg: ChatMessage = {
+          id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          senderId: 'bot-mingsensei',
+          senderName: 'mingsensei',
+          text: quote,
+          timestamp: Date.now(),
+        }
+        set((state: any) => ({
+          messages: [...state.messages, botMsg].slice(-30),
+        }))
+      }
     } else if (now < botIdleUntil) {
       nextState = 'IDLE'
       nextSpeed = 0
@@ -151,6 +187,47 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
   myId: null,
   myName: '',
   players: {},
+  messages: [
+    {
+      id: 'init-system',
+      senderId: 'system',
+      senderName: 'Hệ Thống 🐾',
+      text: 'Chào mừng bạn đến với Dog World! Nhấn [Enter] để trò chuyện.',
+      timestamp: Date.now(),
+      isSystem: true,
+    },
+  ],
+  isChatOpen: false,
+  setChatOpen: (open: boolean) => set({ isChatOpen: open }),
+
+  sendChatMessage: (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed) return
+    const myName = get().myName || 'Cún Cưng'
+    const myId = get().myId || 'local-player'
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          type: 'chat',
+          text: trimmed,
+        })
+      )
+    } else {
+      // Local / Offline mode fallback
+      const localMsg: ChatMessage = {
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        senderId: myId,
+        senderName: myName,
+        text: trimmed,
+        timestamp: Date.now(),
+        isSelf: true,
+      }
+      set((state) => ({
+        messages: [...state.messages, localMsg].slice(-30),
+      }))
+    }
+  },
 
   connect: (playerName: string) => {
     if (socket && socket.readyState === WebSocket.OPEN) return
@@ -200,6 +277,30 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
                   ...state.players,
                   [data.player.id]: data.player,
                 },
+                messages: [
+                  ...state.messages,
+                  {
+                    id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                    senderId: 'system',
+                    senderName: 'Hệ Thống 🐾',
+                    text: `${data.player.name || 'Người chơi'} đã vào phòng 🐾`,
+                    timestamp: Date.now(),
+                    isSystem: true,
+                  },
+                ].slice(-30),
+              }))
+            } else if (data.type === 'chat') {
+              const myId = get().myId
+              const newMsg: ChatMessage = {
+                id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                senderId: data.id,
+                senderName: data.name || 'Người chơi',
+                text: data.text,
+                timestamp: data.timestamp || Date.now(),
+                isSelf: data.id === myId,
+              }
+              set((state) => ({
+                messages: [...state.messages, newMsg].slice(-30),
               }))
             } else if (data.type === 'player_updated') {
               set((state) => {
@@ -249,9 +350,23 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
               }
             } else if (data.type === 'player_left') {
               set((state) => {
+                const leaving = state.players[data.id]
                 const updated = { ...state.players }
                 delete updated[data.id]
-                return { players: updated }
+                const leaveMsg = leaving
+                  ? {
+                      id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                      senderId: 'system',
+                      senderName: 'Hệ Thống 🐾',
+                      text: `${leaving.name || 'Người chơi'} đã rời phòng.`,
+                      timestamp: Date.now(),
+                      isSystem: true,
+                    }
+                  : null
+                return {
+                  players: updated,
+                  messages: leaveMsg ? [...state.messages, leaveMsg].slice(-30) : state.messages,
+                }
               })
             }
           } catch (err) {

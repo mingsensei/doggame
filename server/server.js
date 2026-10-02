@@ -203,6 +203,21 @@ wss.on('connection', (ws) => {
           },
           playerId
         )
+      } else if (msg.type === 'chat') {
+        const player = players.get(playerId)
+        if (player && typeof msg.text === 'string') {
+          const text = msg.text.trim().slice(0, 200)
+          if (text) {
+            broadcast({
+              type: 'chat',
+              id: playerId,
+              name: player.data.name || 'Người chơi',
+              text: text,
+              timestamp: Date.now(),
+            })
+            console.log(`💬 Chat [${player.data.name}]: ${text}`)
+          }
+        }
       }
     } catch (e) {
       console.error('Error handling message:', e)
